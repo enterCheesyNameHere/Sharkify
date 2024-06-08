@@ -1,5 +1,7 @@
 extends Node
 
+signal Authorized;
+
 const PORT := 3000;
 const BINDING := "127.0.0.1";
 
@@ -24,12 +26,14 @@ func _process(delta):
 			var auth_code = request.split("code=")[1].split(" ")[0];
 			
 			GetTokenFromAuthCode(auth_code);
+			connection.disconnect_from_host();
+			RedirectServer.stop();
 
 # Redirects user to Spotify to log in so app can get an auth code
 func AuthCodeRedirect():
 	_listen = true;
 	
-	var foo = RedirectServer.listen(PORT, BINDING);
+	var redirectErr = RedirectServer.listen(PORT, BINDING);
 	
 	var body = [
 		"client_id=%s" % envVars["CLIENT_ID"],
@@ -77,7 +81,19 @@ func GetTokenFromAuthCode(authCode: String):
 	_refreshToken = resBody["refresh_token"];
 	# var lifeSpan = resBody["expires_in"];
 	
+	emit_signal("Authorized");
 	
+
+func GetTopTracks():
+	var range = "long_term";
+	var tracksCnt = 10;
+	var topTracks;
+	var body: Array[String] = [
+		"time_range=%s" % range,
+		"limit=%s" % tracksCnt
+	];
+	
+	return (await _makeRequest("https://api.spotify.com/v1/me/top/tracks", body))["items"];
 
 func _getEnviromentVars() -> Dictionary:
 	var file := FileAccess.open("res://.env", FileAccess.READ);
@@ -89,6 +105,27 @@ func _getEnviromentVars() -> Dictionary:
 		variables[info[0]] = info[1];
 	
 	return variables;
+
+func _makeRequest(endpoint: String, body: Array[String]):
+	var headers = [
+		"Authorization: Bearer %s" % _token
+	]
+	headers = PackedStringArray(headers);
+	var bodyStr = "&".join(PackedStringArray(body));
 	
-func GetTopTracks():
-	pass;
+	var request := HTTPRequest.new();
+	add_child(request);
+	
+	var err = request.request(
+		endpoint+"?"+bodyStr,
+		headers, 
+		HTTPClient.METHOD_GET
+	);
+	
+	if err != OK:
+		printerr("Error making request to %s. Error: %s" % [endpoint, err]);
+		
+	var response = await request.request_completed;
+	var resBody = JSON.parse_string(response[3].get_string_from_utf8());
+	
+	return resBody;
