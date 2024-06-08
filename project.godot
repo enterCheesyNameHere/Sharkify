@@ -14,6 +14,10 @@ config/name="Sharkify"
 config/features=PackedStringArray("4.2", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[autoload]
+
+Spotify="*res://Scripts/Singletons/spotify.gd"
+
 [dotnet]
 
 project/assembly_name="Sharkify"
