@@ -2,24 +2,37 @@ extends Node2D
 
 const SHARK_SCENE = preload("res://Scenes/shark.tscn");
 
+
 @export_category("Tank Configuration")
 @export var pull_sharks: bool = true;
 
 @export_category("Shark Configuration")
+## Maximum distance a shark with popularity of 1 can move
+@export var movement_radius: int = 100; 
+## Maxmimum speed a shark with energy of 1 can move
+@export var movement_speed: int = 5;
+## Maximum frequency of movements (per minute) a shark with energy of 1 will have.
+@export var movement_frequency: int = 10;
+## Maximum change that the jitter function can make
+@export_range(0, 0.5) var jitter_offset: float = 0.1;
+
+
 
 @export_category("Top Tracks Search Parameters")
-@export var search_range := Spotify.SEARCH_LONG;
+## Search range for top songs
+@export var search_range: Spotify.search_ranges = Spotify.search_ranges.LONG;
+## Number of tracks to pull from Spotify. 
 @export_range(1, 50) var tracks_count: int = 10;
 
 var shark_tracks: Dictionary;
 
-func _ready():
-	shark_tracks = load_tracks();
+func _ready():	
+	#shark_tracks = load_tracks();
 	
 	if shark_tracks.is_empty() and pull_sharks:
 		shark_tracks = await pull_data();
 		store_tracks(shark_tracks);
-		load_sharks(shark_tracks);
+		create_sharks(shark_tracks);
 
 func _process(delta):
 	pass
@@ -42,13 +55,23 @@ func pull_data() -> Dictionary:
 		
 	return tracks;
 
-func load_sharks(tracks: Dictionary):
+func create_sharks(tracks: Dictionary):
+	var wall_size: Vector2 = $"Walls/Left Wall".shape.get_rect().size;
+	var roof_size: Vector2 = $Walls/Roof.shape.get_rect().size;
+	var upper_corner: Vector2 = Vector2(wall_size.x, roof_size.y);
+	var lower_corner: Vector2 = Vector2(roof_size.x + wall_size.x, wall_size.y - roof_size.y);
+	
 	for id in tracks:
 		var track = tracks[id];
 		var shark = SHARK_SCENE.instantiate();
+		
+		# Add Attributes
 		shark.track_id = id;
 		shark.track_name = track["name"];
 		shark.energy = track["energy"];
+		shark.popularity = track["popularity"];
+		
+		shark.position = Vector2(randi_range(upper_corner.x, lower_corner.x), randi_range(upper_corner.y, lower_corner.y));
 		add_child(shark);
 	
 	# var shark = SHARK_SCENE.instantiate();

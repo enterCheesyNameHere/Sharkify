@@ -13,7 +13,7 @@ var _refreshToken: String;
 var _listen: bool = false;
 var _verifier: String;
 
-enum {SEARCH_LONG, SEARCH_MEDIUM, SEARCH_SHORT};
+enum search_ranges {LONG, MEDIUM, SHORT};
 
 func _enter_tree():
 	authorization_code_redirect();
@@ -25,11 +25,14 @@ func _process(delta):
 		var request = connection.get_string(connection.get_available_bytes());
 		if request:
 			_listen = false;
+			
+			# TODO: Check for abnormal behavior. User cancels for example.
+			
 			var auth_code = request.split("code=")[1].split(" ")[0];
 			
 			_get_token_from_auth_code(auth_code);
 			
-			# Send page notifying user to close browser or just close the window altogether
+			# TODO: Send page notifying user to close browser or just close the window altogether
 			
 			connection.disconnect_from_host();
 			_redirect_server.stop();
@@ -56,8 +59,6 @@ func authorization_code_redirect():
 	var authURL = "https://accounts.spotify.com/authorize?" + body;
 	OS.shell_open(authURL);
 
-# Need to update this to use a different form of authorization so it can be shared
-# without sharing the client secret as well.
 func _get_token_from_auth_code(authCode: String):
 	var headers = [
 		"Content-Type: application/x-www-form-urlencoded"
@@ -95,7 +96,7 @@ func _get_token_from_auth_code(authCode: String):
 	
 	emit_signal("Authorized");
 
-func get_top_tracks_async(time_range := SEARCH_MEDIUM, amount: int = 10) -> Array:
+func get_top_tracks_async(time_range: search_ranges = search_ranges.MEDIUM, amount: int = 10) -> Array:
 	var range: String;
 	match time_range:
 		0:
