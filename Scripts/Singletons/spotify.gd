@@ -12,6 +12,8 @@ var _token: String;
 var _refreshToken: String;
 var _listen: bool = false;
 
+enum SearchLengths {LONG, MEDIUM, SHORT};
+
 
 func _enter_tree():
 	AuthCodeRedirect();
@@ -67,7 +69,7 @@ func GetTokenFromAuthCode(authCode: String):
 	
 	var request := HTTPRequest.new();
 	add_child(request);
-	
+	[]
 	var err = request.request(
 		"https://accounts.spotify.com/api/token",
 		headers, 
@@ -87,13 +89,20 @@ func GetTokenFromAuthCode(authCode: String):
 	emit_signal("Authorized");
 	
 
-func GetTopTracks():
-	var range = "long_term";
-	var tracksCnt = 10;
+func GetTopTracksAsync(timeRange: SearchLengths = SearchLengths.MEDIUM, amount: int = 10) -> Array:
+	var range: String;
+	match timeRange:
+		0:
+			range = "long_term";
+		1:
+			range = "medium_term";
+		2:
+			range = "short_term";
+			
 	var topTracks;
 	var body: Array[String] = [
 		"time_range=%s" % range,
-		"limit=%s" % tracksCnt
+		"limit=%s" % amount
 	];
 	
 	if !_token:
