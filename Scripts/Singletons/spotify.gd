@@ -13,7 +13,7 @@ var _refreshToken: String;
 var _listen: bool = false;
 
 
-func _ready():
+func _enter_tree():
 	AuthCodeRedirect();
 	
 func _process(delta):
@@ -26,6 +26,9 @@ func _process(delta):
 			var auth_code = request.split("code=")[1].split(" ")[0];
 			
 			GetTokenFromAuthCode(auth_code);
+			
+			# Send page notifying user to close browser or just close the window altogether
+			
 			connection.disconnect_from_host();
 			RedirectServer.stop();
 
@@ -92,6 +95,9 @@ func GetTopTracks():
 		"time_range=%s" % range,
 		"limit=%s" % tracksCnt
 	];
+	
+	if !_token:
+		await Authorized;
 	
 	return (await _makeRequest("https://api.spotify.com/v1/me/top/tracks", body))["items"];
 
