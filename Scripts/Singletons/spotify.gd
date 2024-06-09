@@ -2,67 +2,74 @@ extends Node
 
 signal Authorized;
 
-const PORT := 3000;
-const BINDING := "127.0.0.1";
+const _PORT := 3000;
+const _BINDING := "127.0.0.1";
 
-var envVars := _getEnviromentVars();
-var RedirectServer := TCPServer.new();
-var RedirectURI := "http://%s:%s" % [BINDING, PORT];
+var _env_vars := _get_env_vars();
+var _redirect_server := TCPServer.new();
+var _redirect_uri := "http://%s:%s" % [_BINDING, _PORT];
 var _token: String;
 var _refreshToken: String;
 var _listen: bool = false;
+var _verifier: String;
 
-enum SearchLengths {LONG, MEDIUM, SHORT};
-
+enum {SEARCH_LONG, SEARCH_MEDIUM, SEARCH_SHORT};
 
 func _enter_tree():
-	AuthCodeRedirect();
+	authorization_code_redirect();
 	
 func _process(delta):
 	# Listen for redirects:
-	if _listen and RedirectServer.is_connection_available() :
-		var connection = RedirectServer.take_connection();
+	if _listen and _redirect_server.is_connection_available() :
+		var connection = _redirect_server.take_connection();
 		var request = connection.get_string(connection.get_available_bytes());
 		if request:
 			_listen = false;
 			var auth_code = request.split("code=")[1].split(" ")[0];
 			
-			GetTokenFromAuthCode(auth_code);
+			_get_token_from_auth_code(auth_code);
 			
 			# Send page notifying user to close browser or just close the window altogether
 			
 			connection.disconnect_from_host();
-			RedirectServer.stop();
+			_redirect_server.stop();
 
 # Redirects user to Spotify to log in so app can get an auth code
-func AuthCodeRedirect():
+func authorization_code_redirect():
+	_verifier = _generate_code_verifier(128);
+	var challenge = _generate_code_challenge(_verifier);
 	_listen = true;
 	
-	var redirectErr = RedirectServer.listen(PORT, BINDING);
+	var redirectErr = _redirect_server.listen(_PORT, _BINDING);
 	
 	var body = [
-		"client_id=%s" % envVars["CLIENT_ID"],
+		"client_id=%s" % _env_vars["CLIENT_ID"],
 		"response_type=code",
-		"redirect_uri=%s" % RedirectURI,
-		"scope=user-top-read"
+		"redirect_uri=%s" % _redirect_uri,
+		"scope=user-top-read",
+		"code_challenge_method=S256",
+		"code_challenge=%s" % challenge
 	];
+	
 	body = "&".join(PackedStringArray(body));
 	
 	var authURL = "https://accounts.spotify.com/authorize?" + body;
 	OS.shell_open(authURL);
 
-func GetTokenFromAuthCode(authCode: String):
+# Need to update this to use a different form of authorization so it can be shared
+# without sharing the client secret as well.
+func _get_token_from_auth_code(authCode: String):
 	var headers = [
 		"Content-Type: application/x-www-form-urlencoded"
 	]
 	headers = PackedStringArray(headers);
 	
 	var body = [
-		"client_id=%s" % envVars["CLIENT_ID"],
-		"client_secret=%s" % envVars["CLIENT_SECRET"],
+		"client_id=%s" % _env_vars["CLIENT_ID"],
+		"code_verifier=%s" % _verifier,
 		"grant_type=authorization_code",
 		"code=%s" % authCode,
-		"redirect_uri=%s" % RedirectURI,
+		"redirect_uri=%s" % _redirect_uri,
 		"scope=user-top-read"
 	];
 	body = "&".join(PackedStringArray(body));
@@ -80,16 +87,15 @@ func GetTokenFromAuthCode(authCode: String):
 		printerr("Error occured while querying Spotify for a token. Error Code %s" % err);
 	
 	var response = await request.request_completed;
-	var resBody = JSON.parse_string(response[3].get_string_from_utf8());
+	var res_body = JSON.parse_string(response[3].get_string_from_utf8());
 	
-	_token = resBody["access_token"];
-	_refreshToken = resBody["refresh_token"];
-	# var lifeSpan = resBody["expires_in"];
+	_token = res_body["access_token"];
+	_refreshToken = res_body["refresh_token"];
+	# var lifeSpan = res_body["expires_in"];
 	
 	emit_signal("Authorized");
-	
 
-func GetTopTracksAsync(timeRange: SearchLengths = SearchLengths.MEDIUM, amount: int = 10) -> Array:
+func get_top_tracks_async(timeRange := SEARCH_MEDIUM, amount: int = 10) -> Array:
 	var range: String;
 	match timeRange:
 		0:
@@ -108,9 +114,9 @@ func GetTopTracksAsync(timeRange: SearchLengths = SearchLengths.MEDIUM, amount: 
 	if !_token:
 		await Authorized;
 	
-	return (await _makeRequest("https://api.spotify.com/v1/me/top/tracks", body))["items"];
+	return (await _make_request("https://api.spotify.com/v1/me/top/tracks", body))["items"];
 
-func _getEnviromentVars() -> Dictionary:
+func _get_env_vars() -> Dictionary:
 	var file := FileAccess.open("res://.env", FileAccess.READ);
 	var content = file.get_as_text(true)
 	var variables: Dictionary;
@@ -121,18 +127,18 @@ func _getEnviromentVars() -> Dictionary:
 	
 	return variables;
 
-func _makeRequest(endpoint: String, body: Array[String]):
+func _make_request(endpoint: String, body: Array[String]):
 	var headers = [
 		"Authorization: Bearer %s" % _token
 	]
 	headers = PackedStringArray(headers);
-	var bodyStr = "&".join(PackedStringArray(body));
+	var body_str = "&".join(PackedStringArray(body));
 	
 	var request := HTTPRequest.new();
 	add_child(request);
 	
 	var err = request.request(
-		endpoint+"?"+bodyStr,
+		endpoint+"?"+body_str,
 		headers, 
 		HTTPClient.METHOD_GET
 	);
@@ -141,6 +147,22 @@ func _makeRequest(endpoint: String, body: Array[String]):
 		printerr("Error making request to %s. Error: %s" % [endpoint, err]);
 		
 	var response = await request.request_completed;
-	var resBody = JSON.parse_string(response[3].get_string_from_utf8());
+	var res_body = JSON.parse_string(response[3].get_string_from_utf8());
 	
-	return resBody;
+	return res_body;
+
+func _generate_code_verifier(length: int):
+	length = clamp(length, 43, 128);
+	var code: String;
+	var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz123456789-._~";
+	
+	for i in range(length):
+		code += possible[randi_range(0, possible.length()-1)];
+		
+	return code;
+	
+func _generate_code_challenge(verifier: String):
+	var challenge = Marshalls.raw_to_base64(verifier.sha256_text().hex_decode());
+	return challenge.replace("=", "").replace("+","-").replace("/","_");
+	
+	

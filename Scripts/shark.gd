@@ -3,8 +3,6 @@ extends Node2D
 @export_range(0.0,1.0) var energy: float;
 @export var track_name: String;
 
-
-
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	pass # Replace with function body.
