@@ -20,7 +20,7 @@ func _enter_tree():
 	
 func _process(delta):
 	# Listen for redirects:
-	if _listen and _redirect_server.is_connection_available() :
+	if _listen and _redirect_server.is_connection_available():
 		var connection = _redirect_server.take_connection();
 		var request = connection.get_string(connection.get_available_bytes());
 		if request:
@@ -104,9 +104,8 @@ func get_top_tracks_async(timeRange := SEARCH_MEDIUM, amount: int = 10) -> Array
 			range = "medium_term";
 		2:
 			range = "short_term";
-			
-	var topTracks;
-	var body: Array[String] = [
+
+	var body := [
 		"time_range=%s" % range,
 		"limit=%s" % amount
 	];
@@ -114,7 +113,7 @@ func get_top_tracks_async(timeRange := SEARCH_MEDIUM, amount: int = 10) -> Array
 	if !_token:
 		await Authorized;
 	
-	return (await _make_request("https://api.spotify.com/v1/me/top/tracks", body))["items"];
+	return (await _make_request("/me/top/tracks", body))["items"];
 
 func _get_env_vars() -> Dictionary:
 	var file := FileAccess.open("res://.env", FileAccess.READ);
@@ -138,7 +137,7 @@ func _make_request(endpoint: String, body: Array[String]):
 	add_child(request);
 	
 	var err = request.request(
-		endpoint+"?"+body_str,
+		"https://api.spotify.com/v1" + endpoint + "?" + body_str,
 		headers, 
 		HTTPClient.METHOD_GET
 	);
@@ -165,4 +164,12 @@ func _generate_code_challenge(verifier: String):
 	var challenge = Marshalls.raw_to_base64(verifier.sha256_text().hex_decode());
 	return challenge.replace("=", "").replace("+","-").replace("/","_");
 	
+func get_tracks_audio_features_async(ids: Array[String]):
+	var body := [
+		"ids=%s" % ",".join(PackedStringArray(ids))
+	]
 	
+	if !_token:
+		await Authorized;
+	
+	return (await _make_request("/audio-features", body))
