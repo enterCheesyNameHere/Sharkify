@@ -40,7 +40,7 @@ func authorization_code_redirect():
 	var challenge = _generate_code_challenge(_verifier);
 	_listen = true;
 	
-	var redirectErr = _redirect_server.listen(_PORT, _BINDING);
+	_redirect_server.listen(_PORT, _BINDING);
 	
 	var body = [
 		"client_id=%s" % _env_vars["CLIENT_ID"],
@@ -95,9 +95,9 @@ func _get_token_from_auth_code(authCode: String):
 	
 	emit_signal("Authorized");
 
-func get_top_tracks_async(timeRange := SEARCH_MEDIUM, amount: int = 10) -> Array:
+func get_top_tracks_async(time_range := SEARCH_MEDIUM, amount: int = 10) -> Array:
 	var range: String;
-	match timeRange:
+	match time_range:
 		0:
 			range = "long_term";
 		1:
@@ -105,7 +105,7 @@ func get_top_tracks_async(timeRange := SEARCH_MEDIUM, amount: int = 10) -> Array
 		2:
 			range = "short_term";
 
-	var body := [
+	var body: Array[String] = [
 		"time_range=%s" % range,
 		"limit=%s" % amount
 	];
@@ -164,8 +164,8 @@ func _generate_code_challenge(verifier: String):
 	var challenge = Marshalls.raw_to_base64(verifier.sha256_text().hex_decode());
 	return challenge.replace("=", "").replace("+","-").replace("/","_");
 	
-func get_tracks_audio_features_async(ids: Array[String]):
-	var body := [
+func get_tracks_audio_features_async(ids):
+	var body: Array[String] = [
 		"ids=%s" % ",".join(PackedStringArray(ids))
 	]
 	
