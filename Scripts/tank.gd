@@ -7,8 +7,8 @@ const SHARK_SCENE = preload("res://Scenes/shark.tscn");
 @export var pull_sharks: bool = true;
 
 @export_category("Shark Configuration")
-## Maximum distance a shark with popularity of 1 can move
-@export var movement_radius: int = 100; 
+## Minimum resistance (deacceleration) a shark with popularity of 1 experiences
+@export var movement_resistance: int = 1; 
 ## Maxmimum speed a shark with energy of 1 can move
 @export var movement_speed: int = 5;
 ## Maximum frequency of movements (per minute) a shark with energy of 1 will have.
@@ -25,11 +25,9 @@ const SHARK_SCENE = preload("res://Scenes/shark.tscn");
 @export_range(1, 50) var tracks_count: int = 10;
 
 var shark_tracks: Dictionary;
-
 func _ready():	
-	#shark_tracks = load_tracks();
-	
 	if shark_tracks.is_empty() and pull_sharks:
+		Spotify.authorization_code_redirect();
 		shark_tracks = await pull_data();
 		store_tracks(shark_tracks);
 		create_sharks(shark_tracks);

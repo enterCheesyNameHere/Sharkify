@@ -1,15 +1,68 @@
-[gd_scene load_steps=4 format=3 uid="uid://v7u6p2xk7shv"]
+[gd_scene load_steps=12 format=3 uid="uid://v7u6p2xk7shv"]
 
 [ext_resource type="Script" path="res://Scripts/shark.gd" id="1_glklb"]
-[ext_resource type="Texture2D" uid="uid://ddbg4lgepcbm6" path="res://icon.svg" id="1_pxeo5"]
+[ext_resource type="Texture2D" uid="uid://tyfbr66la0yf" path="res://Assets/Shark/Shark1.png" id="2_mhf5j"]
+[ext_resource type="Texture2D" uid="uid://cqq57gij4srun" path="res://Assets/Shark/Shark2.png" id="3_tvx2m"]
+[ext_resource type="Texture2D" uid="uid://b8yqdsamg0ocr" path="res://Assets/Shark/Shark3.png" id="4_1dvbd"]
+[ext_resource type="Texture2D" uid="uid://bjuns0nvmcy4q" path="res://Assets/Shark/Shark4.png" id="5_deba4"]
+[ext_resource type="Texture2D" uid="uid://yaiog4p8fkxo" path="res://Assets/Shark/Shark5.png" id="6_j33kg"]
+[ext_resource type="Texture2D" uid="uid://cv2dsvp6b76w7" path="res://Assets/Shark/Shark6.png" id="7_6pogf"]
+[ext_resource type="Texture2D" uid="uid://du7kbma75fo48" path="res://Assets/Shark/Shark7.png" id="8_c7d22"]
+[ext_resource type="Texture2D" uid="uid://cgsepkwh433c4" path="res://Assets/Shark/Shark8.png" id="9_rdrxc"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_bwd55"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_mhf5j")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_j33kg")
+}],
+"loop": true,
+"name": &"Looking",
+"speed": 0.5
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_mhf5j")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_tvx2m")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_1dvbd")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_deba4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_j33kg")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_6pogf")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_c7d22")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_rdrxc")
+}],
+"loop": true,
+"name": &"Moving",
+"speed": 5.0
+}]
 
 [sub_resource type="Theme" id="Theme_x3kjt"]
 
 [node name="Shark" type="Node2D"]
 script = ExtResource("1_glklb")
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
-texture = ExtResource("1_pxeo5")
+[node name="Sprite2D" type="AnimatedSprite2D" parent="."]
+scale = Vector2(4, 4)
+sprite_frames = SubResource("SpriteFrames_bwd55")
+animation = &"Moving"
+frame_progress = 0.801505
 
 [node name="Song Info" type="GridContainer" parent="."]
 offset_left = -75.0

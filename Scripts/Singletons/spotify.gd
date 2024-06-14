@@ -15,9 +15,6 @@ var _verifier: String;
 
 enum search_ranges {LONG, MEDIUM, SHORT};
 
-func _enter_tree():
-	authorization_code_redirect();
-	
 func _process(delta):
 	# Listen for redirects:
 	if _listen and _redirect_server.is_connection_available():
