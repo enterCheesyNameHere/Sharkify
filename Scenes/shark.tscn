@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://v7u6p2xk7shv"]
+[gd_scene load_steps=13 format=3 uid="uid://v7u6p2xk7shv"]
 
 [ext_resource type="Script" path="res://Scripts/shark.gd" id="1_glklb"]
 [ext_resource type="Texture2D" uid="uid://tyfbr66la0yf" path="res://Assets/Shark/Shark1.png" id="2_mhf5j"]
@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://cgsepkwh433c4" path="res://Assets/Shark/Shark8.png" id="9_rdrxc"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_bwd55"]
+resource_local_to_scene = true
 animations = [{
 "frames": [{
 "duration": 1.0,
@@ -55,14 +56,16 @@ animations = [{
 
 [sub_resource type="Theme" id="Theme_x3kjt"]
 
-[node name="Shark" type="Node2D"]
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_dpfsu"]
+size = Vector2(114, 70)
+
+[node name="Shark" type="CharacterBody2D"]
 script = ExtResource("1_glklb")
 
 [node name="Sprite2D" type="AnimatedSprite2D" parent="."]
 scale = Vector2(4, 4)
 sprite_frames = SubResource("SpriteFrames_bwd55")
-animation = &"Moving"
-frame_progress = 0.801505
+animation = &"Looking"
 
 [node name="Song Info" type="GridContainer" parent="."]
 offset_left = -75.0
@@ -72,3 +75,8 @@ offset_bottom = -75.0
 theme = SubResource("Theme_x3kjt")
 
 [node name="Movement Cooldown" type="Timer" parent="."]
+one_shot = true
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -6)
+shape = SubResource("RectangleShape2D_dpfsu")

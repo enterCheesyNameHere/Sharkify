@@ -26,7 +26,7 @@ const SHARK_SCENE = preload("res://Scenes/shark.tscn");
 
 var shark_tracks: Dictionary;
 func _ready():	
-	if shark_tracks.is_empty() and pull_sharks:
+	if pull_sharks:
 		Spotify.authorization_code_redirect();
 		shark_tracks = await pull_data();
 		store_tracks(shark_tracks);

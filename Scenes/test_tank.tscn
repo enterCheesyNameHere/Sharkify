@@ -12,7 +12,7 @@ size = Vector2(1104, 24)
 [node name="Tank" type="Node2D"]
 script = ExtResource("1_8v1x3")
 pull_sharks = false
-movement_speed = 20
+movement_speed = 25
 
 [node name="Walls" type="Area2D" parent="."]
 
