@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Data;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using SpotifyAPI.Web;
 
