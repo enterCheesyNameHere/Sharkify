@@ -22,7 +22,7 @@ public class Shark : DrawableGameComponent
 
 	private const int BaseSpeed = 1; 
 	
-	public Shark(Game game/*, FullTrack track*/) : base(game)
+	public Shark(Game game, FullTrack track) : base(game)
 	{
 		_spriteBatch = new SpriteBatch(GraphicsDevice);
 		

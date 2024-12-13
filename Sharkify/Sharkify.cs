@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
 using Microsoft.Xna.Framework.Input.Touch;
 using Microsoft.Xna.Framework.Content;
+using SpotifyAPI.Web;
 
 namespace Sharkify;
 
@@ -28,9 +29,12 @@ public class Sharkify : Game
 	protected override void Initialize()
 	{
 		// TODO: Add your initialization logic here
-		Shark shark = new Shark(this);
+		var tank = new Tank(this);
+		Spotify.InitialAuthentication();
+
+		while (!Spotify.Authenticated);
 		
-		Components.Add(shark);
+		Components.Add(tank);
 		base.Initialize();
 	}
 
@@ -44,12 +48,6 @@ public class Sharkify : Game
 		if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
 		    Keyboard.GetState().IsKeyDown(Keys.Escape))
 			Exit();
-
-		if (Keyboard.GetState().IsKeyDown(Keys.N))
-		{
-			var shark = new Shark(this);
-			Components.Add(shark);
-		}
 
 		// TODO: Add your update logic here
 
