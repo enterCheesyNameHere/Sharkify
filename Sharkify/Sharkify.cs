@@ -1,13 +1,14 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Text.Encodings.Web;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Sharkify.Components;
 
 namespace Sharkify;
 
 public class Sharkify : Game
 {
 	private GraphicsDeviceManager _graphics;
-	
 	private SpriteBatch _spriteBatch;
 
 	public Sharkify()
@@ -20,13 +21,9 @@ public class Sharkify : Game
 
 	protected override void Initialize()
 	{
-		// TODO: Add your initialization logic here
-		var tank = new Tank(this);
-		Spotify.InitialAuthentication();
-
-		while (!Spotify.Authenticated);
+		//Spotify.InitialAuthentication();
+		//while (!Spotify.Authenticated);
 		
-		Components.Add(tank);
 		base.Initialize();
 	}
 
@@ -40,9 +37,7 @@ public class Sharkify : Game
 		if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed ||
 		    Keyboard.GetState().IsKeyDown(Keys.Escape))
 			Exit();
-
-		// TODO: Add your update logic here
-
+		
 		base.Update(gameTime);
 	}
 
